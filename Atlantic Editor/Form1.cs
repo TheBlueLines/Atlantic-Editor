@@ -5,32 +5,31 @@ namespace Atlantic_Editor
 {
     public partial class Main : Form
     {
-        public List<Texture> textures = new();
-        private Task? task = null;
-        public bool inSearch = false;
-        public Main()
+        public Main(string? firstLoad = null)
         {
             InitializeComponent();
+            if (firstLoad != null)
+            {
+                LoadFile(firstLoad);
+            }
         }
         private void LoadFile(string path)
         {
-            textures.Clear();
             list.Items.Clear();
-            Core.handle = new Handler(progressBar1, list, this);
             byte[] file = File.ReadAllBytes(path);
-            task = new(() => Core.LoadWAD(file));
-            task.Start();
+            Core.LoadWAD(file);
+            ReloadList();
         }
         public void ReloadList(string? search = null)
         {
             try
             {
                 list.Items.Clear();
-                foreach (Texture value in textures)
+                foreach (Entry entry in Core.entries)
                 {
-                    if (!string.IsNullOrEmpty(value.title) && (string.IsNullOrEmpty(search) || value.title.Contains(search)))
+                    if (!string.IsNullOrEmpty(entry.name) && (string.IsNullOrEmpty(search) || entry.name.Contains(search)))
                     {
-                        list.Items.Add(value.title);
+                        list.Items.Add(entry.name);
                     }
                 }
             }
@@ -40,18 +39,21 @@ namespace Atlantic_Editor
         {
             if (list.SelectedIndex >= 0)
             {
-                Texture texture = textures[list.SelectedIndex];
-                Bitmap image = new Bitmap(texture.width, texture.height);
-                List<Color>? palette = texture.palette;
-                byte[]? nzx = texture.texture0;
-                if (nzx != null && palette != null)
+                Texture? texture = Core.entries[list.SelectedIndex].texture;
+                if (texture != null)
                 {
-                    for (int i = 0; i < texture.height * texture.width; i++)
+                    Bitmap image = new Bitmap(texture.width, texture.height);
+                    List<Color>? palette = texture.palette;
+                    byte[]? nzx = texture.texture0;
+                    if (nzx != null && palette != null)
                     {
-                        image.SetPixel(i % texture.width, i / texture.width, palette[nzx[i]]);
+                        for (int i = 0; i < texture.height * texture.width; i++)
+                        {
+                            image.SetPixel(i % texture.width, i / texture.width, palette[nzx[i]]);
+                        }
                     }
+                    picture.Image = image;
                 }
-                picture.Image = image;
             }
         }
         private void picture_Paint(object sender, PaintEventArgs e)
@@ -65,7 +67,6 @@ namespace Atlantic_Editor
         }
         private void search_TextChanged(object sender, EventArgs e)
         {
-            inSearch = !string.IsNullOrEmpty(search.Text);
             ReloadList(search.Text);
         }
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -73,49 +74,6 @@ namespace Atlantic_Editor
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 LoadFile(openFileDialog1.FileName);
-            }
-        }
-    }
-    public class Handler : Handle
-    {
-        Main? main = null;
-        ProgressBar nzx = new();
-        ListBox listBox = new();
-        int max = 0;
-        public Handler(ProgressBar progressBar, ListBox list, Main form)
-        {
-            nzx = progressBar;
-            main = form;
-            listBox = list;
-        }
-        public override void SetTextureAll(int number)
-        {
-            nzx.Enabled = true;
-            max = number;
-        }
-        public override void SetTextureLoad(int number)
-        {
-            nzx.Value = (int)((float)number / (float)max * 100);
-        }
-        public override void Textures(List<Texture> textures)
-        {
-            if (main != null)
-            {
-                main.textures = textures;
-                main.ReloadList();
-            }
-            nzx.Value = 0;
-            nzx.Enabled = false;
-        }
-        public override void NewTexture(Texture texture)
-        {
-            if (main != null)
-            {
-                if (!string.IsNullOrEmpty(texture.title) && !main.inSearch)
-                {
-                    listBox.Items.Add(texture.title);
-                }
-                main.textures.Add(texture);
             }
         }
     }
