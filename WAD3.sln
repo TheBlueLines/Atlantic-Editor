@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33606.364
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WAD3", "WAD3\WAD3.csproj", "{7476CAD9-6FD9-4C95-B5E1-CFAA44DE38F6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlantic Editor", "Atlantic Editor\Atlantic Editor.csproj", "{73FAFC0C-A982-45D7-B941-0AFF741EA205}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7476CAD9-6FD9-4C95-B5E1-CFAA44DE38F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7476CAD9-6FD9-4C95-B5E1-CFAA44DE38F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7476CAD9-6FD9-4C95-B5E1-CFAA44DE38F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7476CAD9-6FD9-4C95-B5E1-CFAA44DE38F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73FAFC0C-A982-45D7-B941-0AFF741EA205}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73FAFC0C-A982-45D7-B941-0AFF741EA205}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73FAFC0C-A982-45D7-B941-0AFF741EA205}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73FAFC0C-A982-45D7-B941-0AFF741EA205}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3616CF2B-9850-4915-BBB6-A57FEEAC0309}
+	EndGlobalSection
+EndGlobal
