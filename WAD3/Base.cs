@@ -39,11 +39,11 @@ namespace TTMC.WAD3
 				return BitConverter.ToInt32(Core.bytes, offset);
 			}
 		}
-		public Texture? texture
+		public Texture texture
 		{
 			get
 			{
-				return new() { offset = textureOffset, size = size };
+				return new() { entry = this };
 			}
 		}
 		public int diskSize
@@ -85,41 +85,60 @@ namespace TTMC.WAD3
 	}
 	public class Texture
 	{
-		public int offset = 0;
-		public int size = 0;
+		internal Entry entry = new();
 		internal int? mipOffset0
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset + 24);
+				if (entry.type == 0x40 || entry.type == 0x43)
+				{
+					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 24);
+				}
+				return null;
 			}
 		}
 		internal int? mipOffset1
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset + 28);
+				if (entry.type == 0x40 || entry.type == 0x43)
+				{
+					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 28);
+				}
+				return null;
 			}
 		}
 		internal int? mipOffset2
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset + 32);
+				if (entry.type == 0x40 || entry.type == 0x43)
+				{
+					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 32);
+				}
+				return null;
 			}
 		}
 		internal int? mipOffset3
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset + 36);
+				if (entry.type == 0x40 || entry.type == 0x43)
+				{
+					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 36);
+				}
+				return null;
 			}
 		}
 		public string? name
 		{
 			get
 			{
-				return Core.NullTerminated(Core.bytes, offset);
+				if (entry.type == 0x40 || entry.type == 0x43)
+				{
+					return Core.NullTerminated(Core.bytes, entry.textureOffset);
+				}
+				return null;
 			}
 		}
 		public List<Color>? palette
@@ -128,7 +147,7 @@ namespace TTMC.WAD3
 			{
 				if (Core.bytes != null)
 				{
-					int paletteOffset = offset + size - (256 * 3) - 2;
+					int paletteOffset = entry.textureOffset + entry.size - (256 * 3) - 2;
 					byte[] palette = Core.bytes[paletteOffset..][..(256 * 3)];
 					List<Color> colors = new();
 					for (int j = 0; j < palette.Length; j += 3)
@@ -144,42 +163,46 @@ namespace TTMC.WAD3
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset + 20);
+				return BitConverter.ToInt32(Core.bytes, entry.textureOffset + (entry.type == 0x40 || entry.type == 0x43 ? 20 : 4));
 			}
 		}
 		public int width
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset + 16);
+				return BitConverter.ToInt32(Core.bytes, entry.textureOffset + (entry.type == 0x40 || entry.type == 0x43 ? 16 : 0));
 			}
 		}
 		public byte[]? texture0
 		{
 			get
 			{
-				return mipOffset0 != null ? Core.bytes[(offset + mipOffset0.Value)..][..(width * height)] : null;
+				if (entry.type == 0x40 || entry.type == 0x43)
+				{
+					return mipOffset0 != null ? Core.bytes[(entry.textureOffset + mipOffset0.Value)..][..(width * height)] : null;
+				}
+				return Core.bytes[(entry.textureOffset + 8)..][..(width * height)];
 			}
 		}
 		public byte[]? texture1
 		{
 			get
 			{
-				return mipOffset1 != null ? Core.bytes[(offset + mipOffset1.Value)..][..(width / 2 * height / 2)] : null;
+				return mipOffset1 != null ? Core.bytes[(entry.textureOffset + mipOffset1.Value)..][..(width / 2 * height / 2)] : null;
 			}
 		}
 		public byte[]? texture2
 		{
 			get
 			{
-				return mipOffset2 != null ? Core.bytes[(offset + mipOffset2.Value)..][..(width / 4 * height / 4)] : null;
+				return mipOffset2 != null ? Core.bytes[(entry.textureOffset + mipOffset2.Value)..][..(width / 4 * height / 4)] : null;
 			}
 		}
 		public byte[]? texture3
 		{
 			get
 			{
-				return mipOffset3 != null ? Core.bytes[(offset + mipOffset3.Value)..][..(width / 8 * height / 8)] : null;
+				return mipOffset3 != null ? Core.bytes[(entry.textureOffset + mipOffset3.Value)..][..(width / 8 * height / 8)] : null;
 			}
 		}
 	}
