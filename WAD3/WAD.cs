@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TTMC.WAD3
 {
-	public class Core
+	public class WAD
 	{
 		public static List<Entry> entries = new();
 		internal static byte[] bytes = new byte[0];
@@ -36,7 +36,7 @@ namespace TTMC.WAD3
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset);
+				return BitConverter.ToInt32(WAD.bytes, offset);
 			}
 		}
 		public Texture texture
@@ -50,28 +50,28 @@ namespace TTMC.WAD3
 		{
 			get
 			{
-				return Core.bytes != null ? BitConverter.ToInt32(Core.bytes, offset + 4) : 0;
+				return WAD.bytes != null ? BitConverter.ToInt32(WAD.bytes, offset + 4) : 0;
 			}
 		}
 		public int size
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, offset + 8);
+				return BitConverter.ToInt32(WAD.bytes, offset + 8);
 			}
 		}
 		public byte? type
 		{
 			get
 			{
-				return Core.bytes[offset + 12];
+				return WAD.bytes[offset + 12];
 			}
 		}
 		public bool compression
 		{
 			get
 			{
-				return BitConverter.ToBoolean(Core.bytes, offset + 13);
+				return BitConverter.ToBoolean(WAD.bytes, offset + 13);
 
 			}
 		}
@@ -79,7 +79,7 @@ namespace TTMC.WAD3
 		{
 			get
 			{
-				return Core.NullTerminated(Core.bytes, offset + 16);
+				return WAD.NullTerminated(WAD.bytes, offset + 16);
 			}
 		}
 	}
@@ -92,7 +92,7 @@ namespace TTMC.WAD3
 			{
 				if (entry.type == 0x40 || entry.type == 0x43)
 				{
-					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 24);
+					return BitConverter.ToInt32(WAD.bytes, entry.textureOffset + 24);
 				}
 				return null;
 			}
@@ -103,7 +103,7 @@ namespace TTMC.WAD3
 			{
 				if (entry.type == 0x40 || entry.type == 0x43)
 				{
-					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 28);
+					return BitConverter.ToInt32(WAD.bytes, entry.textureOffset + 28);
 				}
 				return null;
 			}
@@ -114,7 +114,7 @@ namespace TTMC.WAD3
 			{
 				if (entry.type == 0x40 || entry.type == 0x43)
 				{
-					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 32);
+					return BitConverter.ToInt32(WAD.bytes, entry.textureOffset + 32);
 				}
 				return null;
 			}
@@ -125,7 +125,7 @@ namespace TTMC.WAD3
 			{
 				if (entry.type == 0x40 || entry.type == 0x43)
 				{
-					return BitConverter.ToInt32(Core.bytes, entry.textureOffset + 36);
+					return BitConverter.ToInt32(WAD.bytes, entry.textureOffset + 36);
 				}
 				return null;
 			}
@@ -136,7 +136,7 @@ namespace TTMC.WAD3
 			{
 				if (entry.type == 0x40 || entry.type == 0x43)
 				{
-					return Core.NullTerminated(Core.bytes, entry.textureOffset);
+					return WAD.NullTerminated(WAD.bytes, entry.textureOffset);
 				}
 				return null;
 			}
@@ -145,10 +145,10 @@ namespace TTMC.WAD3
 		{
 			get
 			{
-				if (Core.bytes != null)
+				if (WAD.bytes != null)
 				{
 					int paletteOffset = entry.textureOffset + entry.size - (256 * 3) - 2;
-					byte[] palette = Core.bytes[paletteOffset..][..(256 * 3)];
+					byte[] palette = WAD.bytes[paletteOffset..][..(256 * 3)];
 					List<Color> colors = new();
 					for (int j = 0; j < palette.Length; j += 3)
 					{
@@ -163,14 +163,14 @@ namespace TTMC.WAD3
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, entry.textureOffset + (entry.type == 0x40 || entry.type == 0x43 ? 20 : 4));
+				return BitConverter.ToInt32(WAD.bytes, entry.textureOffset + (entry.type == 0x40 || entry.type == 0x43 ? 20 : 4));
 			}
 		}
 		public int width
 		{
 			get
 			{
-				return BitConverter.ToInt32(Core.bytes, entry.textureOffset + (entry.type == 0x40 || entry.type == 0x43 ? 16 : 0));
+				return BitConverter.ToInt32(WAD.bytes, entry.textureOffset + (entry.type == 0x40 || entry.type == 0x43 ? 16 : 0));
 			}
 		}
 		public byte[]? texture0
@@ -179,30 +179,30 @@ namespace TTMC.WAD3
 			{
 				if (entry.type == 0x40 || entry.type == 0x43)
 				{
-					return mipOffset0 != null ? Core.bytes[(entry.textureOffset + mipOffset0.Value)..][..(width * height)] : null;
+					return mipOffset0 != null ? WAD.bytes[(entry.textureOffset + mipOffset0.Value)..][..(width * height)] : null;
 				}
-				return Core.bytes[(entry.textureOffset + 8)..][..(width * height)];
+				return WAD.bytes[(entry.textureOffset + 8)..][..(width * height)];
 			}
 		}
 		public byte[]? texture1
 		{
 			get
 			{
-				return mipOffset1 != null ? Core.bytes[(entry.textureOffset + mipOffset1.Value)..][..(width / 2 * height / 2)] : null;
+				return mipOffset1 != null ? WAD.bytes[(entry.textureOffset + mipOffset1.Value)..][..(width / 2 * height / 2)] : null;
 			}
 		}
 		public byte[]? texture2
 		{
 			get
 			{
-				return mipOffset2 != null ? Core.bytes[(entry.textureOffset + mipOffset2.Value)..][..(width / 4 * height / 4)] : null;
+				return mipOffset2 != null ? WAD.bytes[(entry.textureOffset + mipOffset2.Value)..][..(width / 4 * height / 4)] : null;
 			}
 		}
 		public byte[]? texture3
 		{
 			get
 			{
-				return mipOffset3 != null ? Core.bytes[(entry.textureOffset + mipOffset3.Value)..][..(width / 8 * height / 8)] : null;
+				return mipOffset3 != null ? WAD.bytes[(entry.textureOffset + mipOffset3.Value)..][..(width / 8 * height / 8)] : null;
 			}
 		}
 	}

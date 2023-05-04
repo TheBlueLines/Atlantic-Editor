@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\VPK\VPK.csproj" />
     <ProjectReference Include="..\WAD3\WAD3.csproj" />
   </ItemGroup>
 

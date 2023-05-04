@@ -9,8 +9,7 @@ namespace Atlantic_Editor
 		static void Main(string[] args)
 		{
 			ApplicationConfiguration.Initialize();
-			Main main = new Main(args.Length > 0 ? args[0] : null);
-			Application.Run(main);
+			Application.Run(args.Length > 0 ? (args[0].EndsWith(".wad") ? new Main(args[0]) : args[0].EndsWith(".vpk") ? new FileBrowser(args[0]) : new FileBrowser()) : new FileBrowser());
 		}
 	}
 }

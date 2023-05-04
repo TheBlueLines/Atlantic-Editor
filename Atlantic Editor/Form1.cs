@@ -18,13 +18,13 @@ namespace Atlantic_Editor
 		{
 			list.Items.Clear();
 			byte[] file = File.ReadAllBytes(path);
-			Core.LoadWAD(file);
+			WAD.LoadWAD(file);
 			ReloadList();
 		}
 		public void ReloadList(string? search = null)
 		{
 			list.Items.Clear();
-			foreach (Entry entry in Core.entries)
+			foreach (Entry entry in WAD.entries)
 			{
 				if (!string.IsNullOrEmpty(entry.name) && (string.IsNullOrEmpty(search) || entry.name.ToLower().Contains(search.ToLower())))
 				{
@@ -101,7 +101,7 @@ namespace Atlantic_Editor
 				string? nzx = list.SelectedItem as string;
 				if (!string.IsNullOrEmpty(nzx))
 				{
-					Entry? entry = Core.entries.Where(x => x.name == nzx).FirstOrDefault();
+					Entry? entry = WAD.entries.Where(x => x.name == nzx).FirstOrDefault();
 					if (entry != null)
 					{
 						Texture? texture = entry.texture;
@@ -117,10 +117,10 @@ namespace Atlantic_Editor
 		private void SaveImagesToFolder(string path)
 		{
 			progressBar1.Enabled = true;
-			int all = Core.entries.Count;
+			int all = WAD.entries.Count;
 			for (int i = 0; i < all; i++)
 			{
-				Texture? texture = Core.entries[i].texture;
+				Texture? texture = WAD.entries[i].texture;
 				if (texture != null)
 				{
 					Bitmap image = MakeImage(texture);
