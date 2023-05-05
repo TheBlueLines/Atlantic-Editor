@@ -1,1 +1,3 @@
-# WAD3
+# Atlantic Editor
+
+Supports: WAD3, VPK

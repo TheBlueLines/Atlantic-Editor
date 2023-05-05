@@ -6,6 +6,7 @@ namespace TTMC.VPK
 	{
 		public static List<Entry> entries = new();
 		internal static byte[] data = new byte[0];
+		internal static byte[] tree = new byte[0];
 		internal static string origin = string.Empty;
 		public static void LoadVPK(string filePath, bool force = false)
 		{
@@ -18,45 +19,54 @@ namespace TTMC.VPK
 			int treeSize = BitConverter.ToInt32(data, 8);
 			if (signature == 1437209140 || force)
 			{
-				int pointer = 0;
-				if (version == 1)
+				int headerLength = 0;
+				switch (version)
 				{
-					pointer += 12;
+					case 1:
+						headerLength = 12;
+						break;
+					case 2:
+						headerLength = 28;
+						break;
+					default:
+						return;
+				}
+				tree = data[headerLength..][..treeSize];
+				int pointer = 0;
+				while (true)
+				{
+					string extension = NullTerminated(tree, pointer);
+					pointer += extension.Length + 1;
+					if (string.IsNullOrEmpty(extension))
+					{
+						break;
+					}
 					while (true)
 					{
-						string extension = NullTerminated(data, pointer);
-						pointer += extension.Length + 1;
-						if (string.IsNullOrEmpty(extension))
+						string path = NullTerminated(tree, pointer);
+						pointer += path.Length + 1;
+						if (string.IsNullOrEmpty(path))
 						{
 							break;
 						}
 						while (true)
 						{
-							string path = NullTerminated(data, pointer);
-							pointer += path.Length + 1;
-							if (string.IsNullOrEmpty(path))
+							string filename = NullTerminated(tree, pointer);
+							pointer += filename.Length + 1;
+							if (string.IsNullOrEmpty(filename))
 							{
 								break;
 							}
-							while (true)
+							ushort preloadBytes = BitConverter.ToUInt16(tree, pointer + 4);
+							Entry entry = new()
 							{
-								string filename = NullTerminated(data, pointer);
-								pointer += filename.Length + 1;
-								if (string.IsNullOrEmpty(filename))
-								{
-									break;
-								}
-								ushort preloadBytes = BitConverter.ToUInt16(data, pointer + 4);
-								Entry entry = new()
-								{
-									extension = extension,
-									path = path,
-									filename = filename,
-									pointer = pointer
-								};
-								response.Add(entry);
-								pointer += preloadBytes + 18;
-							}
+								extension = extension,
+								path = path,
+								filename = filename,
+								pointer = pointer
+							};
+							response.Add(entry);
+							pointer += preloadBytes + 18;
 						}
 					}
 				}
@@ -98,35 +108,35 @@ namespace TTMC.VPK
 		{
 			get
 			{
-				return BitConverter.ToInt32(VPK.data, pointer);
+				return BitConverter.ToInt32(VPK.tree, pointer);
 			}
 		}
 		internal ushort preloadBytes
 		{
 			get
 			{
-				return BitConverter.ToUInt16(VPK.data, pointer + 4);
+				return BitConverter.ToUInt16(VPK.tree, pointer + 4);
 			}
 		}
 		internal ushort archiveIndex
 		{
 			get
 			{
-				return BitConverter.ToUInt16(VPK.data, pointer + 6);
+				return BitConverter.ToUInt16(VPK.tree, pointer + 6);
 			}
 		}
 		internal int entryOffset
 		{
 			get
 			{
-				return BitConverter.ToInt32(VPK.data, pointer + 8);
+				return BitConverter.ToInt32(VPK.tree, pointer + 8);
 			}
 		}
 		internal int entryLength
 		{
 			get
 			{
-				return BitConverter.ToInt32(VPK.data, pointer + 12);
+				return BitConverter.ToInt32(VPK.tree, pointer + 12);
 			}
 		}
 		public byte[] preloadData
@@ -140,7 +150,7 @@ namespace TTMC.VPK
 		{
 			get
 			{
-				return  path + "/" + filename + "." + extension;
+				return  path == " " ? filename + "." + extension : path + "/" + filename + "." + extension;
 			}
 		}
 		public byte[] data
