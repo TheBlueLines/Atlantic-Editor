@@ -4,11 +4,11 @@ namespace TTMC.VPK
 {
 	public class VPK
 	{
-		public static List<Entry> entries = new();
-		internal static byte[] data = new byte[0];
-		internal static byte[] tree = new byte[0];
-		internal static string origin = string.Empty;
-		public static void LoadVPK(string filePath, bool force = false)
+		public List<Entry> entries = new();
+		internal byte[] data = new byte[0];
+		internal byte[] tree = new byte[0];
+		internal string origin = string.Empty;
+		public VPK(string filePath, bool force = false)
 		{
 			int ant = filePath.LastIndexOf("_");
 			origin = filePath[..ant];
@@ -58,13 +58,7 @@ namespace TTMC.VPK
 								break;
 							}
 							ushort preloadBytes = BitConverter.ToUInt16(tree, pointer + 4);
-							Entry entry = new()
-							{
-								extension = extension,
-								path = path,
-								filename = filename,
-								pointer = pointer
-							};
+							Entry entry = new(this, pointer, extension, path, filename);
 							response.Add(entry);
 							pointer += preloadBytes + 18;
 						}
@@ -73,11 +67,13 @@ namespace TTMC.VPK
 			}
 			entries = response;
 		}
-		public static string NullTerminated(byte[] data, int start = 0)
+		internal string NullTerminated(byte[] data, int start = 0, int max = 0)
 		{
-			return Encoding.ASCII.GetString(data, start, data[start..].ToList().IndexOf(0x00));
+			List<byte> bytes = (max != 0 ? data[start..][..max] : data[start..]).ToList();
+			int count = bytes.Contains(0x00) ? bytes.IndexOf(0x00) : max;
+			return Encoding.ASCII.GetString(data, start, count);
 		}
-		public static string AlterFile(int index)
+		public string AlterFile(int index)
 		{
 			string temp = index.ToString();
 			while (temp.Length < 3)
@@ -86,7 +82,7 @@ namespace TTMC.VPK
 			}
 			return origin + "_" + temp + ".vpk";
 		}
-		public static byte[] Combine(params byte[][] arrays)
+		public byte[] Combine(params byte[][] arrays)
 		{
 			byte[] rv = new byte[arrays.Sum(a => a.Length)];
 			int offset = 0;
@@ -100,50 +96,59 @@ namespace TTMC.VPK
 	}
 	public class Entry
 	{
-		internal int pointer { get; set; }
-		public string? extension { get; set; }
-		public string? path { get; set; }
-		public string? filename { get; set; }
+		internal VPK vpk;
+		internal int pointer;
+		public string extension;
+		public string path;
+		public string filename;
+		public Entry(VPK vpk, int pointer, string extension, string path, string filename)
+		{
+			this.vpk = vpk;
+			this.pointer = pointer;
+			this.extension = extension;
+			this.path = path;
+			this.filename = filename;
+		}
 		public int CRC
 		{
 			get
 			{
-				return BitConverter.ToInt32(VPK.tree, pointer);
+				return BitConverter.ToInt32(vpk.tree, pointer);
 			}
 		}
 		internal ushort preloadBytes
 		{
 			get
 			{
-				return BitConverter.ToUInt16(VPK.tree, pointer + 4);
+				return BitConverter.ToUInt16(vpk.tree, pointer + 4);
 			}
 		}
 		internal ushort archiveIndex
 		{
 			get
 			{
-				return BitConverter.ToUInt16(VPK.tree, pointer + 6);
+				return BitConverter.ToUInt16(vpk.tree, pointer + 6);
 			}
 		}
 		internal int entryOffset
 		{
 			get
 			{
-				return BitConverter.ToInt32(VPK.tree, pointer + 8);
+				return BitConverter.ToInt32(vpk.tree, pointer + 8);
 			}
 		}
 		internal int entryLength
 		{
 			get
 			{
-				return BitConverter.ToInt32(VPK.tree, pointer + 12);
+				return BitConverter.ToInt32(vpk.tree, pointer + 12);
 			}
 		}
 		public byte[] preloadData
 		{
 			get
 			{
-				return VPK.data[(pointer + 18)..][..preloadBytes];
+				return vpk.data[(pointer + 18)..][..preloadBytes];
 			}
 		}
 		public string fullPath
@@ -159,7 +164,7 @@ namespace TTMC.VPK
 			{
 				if (entryLength > 0)
 				{
-					return VPK.Combine(preloadData, File.ReadAllBytes(VPK.AlterFile(archiveIndex))[entryOffset..][..entryLength]);
+					return vpk.Combine(preloadData, File.ReadAllBytes(vpk.AlterFile(archiveIndex))[entryOffset..][..entryLength]);
 				}
 				return preloadData;
 			}

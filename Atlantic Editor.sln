@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33606.364
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WAD3", "WAD3\WAD3.csproj", "{7476CAD9-6FD9-4C95-B5E1-CFAA44DE38F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WAD", "WAD\WAD.csproj", "{7476CAD9-6FD9-4C95-B5E1-CFAA44DE38F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlantic Editor", "Atlantic Editor\Atlantic Editor.csproj", "{73FAFC0C-A982-45D7-B941-0AFF741EA205}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VPK", "VPK\VPK.csproj", "{FFA0099E-0E40-4A56-9380-35899FAF3AB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPK", "WPK\WPK.csproj", "{BCC18A21-FC76-4CE1-B252-7268243E6B75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{FFA0099E-0E40-4A56-9380-35899FAF3AB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFA0099E-0E40-4A56-9380-35899FAF3AB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFA0099E-0E40-4A56-9380-35899FAF3AB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCC18A21-FC76-4CE1-B252-7268243E6B75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCC18A21-FC76-4CE1-B252-7268243E6B75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCC18A21-FC76-4CE1-B252-7268243E6B75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCC18A21-FC76-4CE1-B252-7268243E6B75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

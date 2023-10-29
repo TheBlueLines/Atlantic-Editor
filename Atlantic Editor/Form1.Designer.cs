@@ -47,6 +47,7 @@
 			// 
 			// list
 			// 
+			list.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
 			list.Font = new Font("Roboto", 20.25F, FontStyle.Regular, GraphicsUnit.Point);
 			list.FormattingEnabled = true;
 			list.ItemHeight = 33;
@@ -58,7 +59,7 @@
 			// 
 			// picture
 			// 
-			picture.BackgroundImageLayout = ImageLayout.Stretch;
+			picture.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			picture.BorderStyle = BorderStyle.FixedSingle;
 			picture.Location = new Point(217, 27);
 			picture.Name = "picture";
@@ -79,6 +80,7 @@
 			// 
 			// progressBar1
 			// 
+			progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			progressBar1.Enabled = false;
 			progressBar1.Location = new Point(11, 545);
 			progressBar1.Name = "progressBar1";
@@ -105,7 +107,7 @@
 			// 
 			saveToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imagesToolStripMenuItem, selectedToolStripMenuItem });
 			saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-			saveToolStripMenuItem.Size = new Size(53, 20);
+			saveToolStripMenuItem.Size = new Size(52, 20);
 			saveToolStripMenuItem.Text = "Export";
 			// 
 			// imagesToolStripMenuItem
@@ -141,10 +143,8 @@
 			Controls.Add(picture);
 			Controls.Add(list);
 			Controls.Add(menuStrip1);
-			FormBorderStyle = FormBorderStyle.FixedSingle;
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			MainMenuStrip = menuStrip1;
-			MaximizeBox = false;
 			Name = "Main";
 			Text = "Atlantic Editor";
 			((System.ComponentModel.ISupportInitialize)picture).EndInit();

@@ -1,11 +1,12 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using TTMC.WAD3;
+using TTMC.WAD;
 
 namespace Atlantic_Editor
 {
 	public partial class Main : Form
 	{
+		private WAD? wad = null;
 		public Main(string? firstLoad = null)
 		{
 			InitializeComponent();
@@ -17,18 +18,21 @@ namespace Atlantic_Editor
 		private void LoadFile(string path)
 		{
 			list.Items.Clear();
-			byte[] file = File.ReadAllBytes(path);
-			WAD.LoadWAD(file);
+			Stream stream = File.OpenRead(path);
+			wad = new(stream);
 			ReloadList();
 		}
 		public void ReloadList(string? search = null)
 		{
-			list.Items.Clear();
-			foreach (Entry entry in WAD.entries)
+			if (wad != null)
 			{
-				if (!string.IsNullOrEmpty(entry.name) && (string.IsNullOrEmpty(search) || entry.name.ToLower().Contains(search.ToLower())))
+				list.Items.Clear();
+				foreach (Entry entry in wad.entries)
 				{
-					list.Items.Add(entry.name);
+					if (!string.IsNullOrEmpty(entry.name) && (string.IsNullOrEmpty(search) || entry.name.ToLower().Contains(search.ToLower())))
+					{
+						list.Items.Add(entry.name);
+					}
 				}
 			}
 		}
@@ -96,12 +100,12 @@ namespace Atlantic_Editor
 		}
 		private Bitmap? SelectedImage()
 		{
-			if (list.SelectedIndex >= 0)
+			if (wad != null && list.SelectedIndex >= 0)
 			{
 				string? nzx = list.SelectedItem as string;
 				if (!string.IsNullOrEmpty(nzx))
 				{
-					Entry? entry = WAD.entries.Where(x => x.name == nzx).FirstOrDefault();
+					Entry? entry = wad.entries.Where(x => x.name == nzx).FirstOrDefault();
 					if (entry != null)
 					{
 						Texture? texture = entry.texture;
@@ -116,21 +120,24 @@ namespace Atlantic_Editor
 		}
 		private void SaveImagesToFolder(string path)
 		{
-			progressBar1.Enabled = true;
-			int all = WAD.entries.Count;
-			for (int i = 0; i < all; i++)
+			if (wad != null)
 			{
-				Texture? texture = WAD.entries[i].texture;
-				if (texture != null)
+				progressBar1.Enabled = true;
+				int all = wad.entries.Count;
+				for (int i = 0; i < all; i++)
 				{
-					Bitmap image = MakeImage(texture);
-					string temp = path + Path.DirectorySeparatorChar + texture.name + ".bmp";
-					image.Save(temp, ImageFormat.Bmp);
-					progressBar1.Value = (int)((float)i / (float)all * 100);
+					Texture? texture = wad.entries[i].texture;
+					if (texture != null)
+					{
+						Bitmap image = MakeImage(texture);
+						string temp = path + Path.DirectorySeparatorChar + texture.name + ".bmp";
+						image.Save(temp, ImageFormat.Bmp);
+						progressBar1.Value = (int)((float)i / (float)all * 100);
+					}
 				}
+				progressBar1.Enabled = false;
+				progressBar1.Value = 0;
 			}
-			progressBar1.Enabled = false;
-			progressBar1.Value = 0;
 		}
 	}
 }
