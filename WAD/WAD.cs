@@ -33,6 +33,11 @@ namespace TTMC.WAD
 			int count = bytes.Contains(0x00) ? bytes.IndexOf(0x00) : max;
 			return Encoding.ASCII.GetString(data, start, count);
 		}
+		public void Close()
+		{
+			stream.Close();
+			stream.Dispose();
+		}
 	}
 	public class Entry
 	{

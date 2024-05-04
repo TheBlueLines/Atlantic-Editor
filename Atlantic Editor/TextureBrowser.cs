@@ -4,10 +4,11 @@ using TTMC.WAD;
 
 namespace Atlantic_Editor
 {
-	public partial class Main : Form
+	public partial class TextureBrowser : Form
 	{
+		private Color reColor = Color.White;
 		private WAD? wad = null;
-		public Main(string? firstLoad = null)
+		public TextureBrowser(string? firstLoad = null)
 		{
 			InitializeComponent();
 			if (firstLoad != null)
@@ -51,9 +52,14 @@ namespace Atlantic_Editor
 			byte[]? nzx = texture.texture0;
 			if (nzx != null && palette != null)
 			{
-				for (int i = 0; i < texture.height * texture.width; i++)
+				for (int y = 0; y < texture.height; y++)
 				{
-					image.SetPixel(i % texture.width, i / texture.width, palette[nzx[i]]);
+					for (int x = 0; x < texture.width; x++)
+					{
+						int index = nzx[y * texture.width + x];
+						Color color = palette[index];
+						image.SetPixel(x, y, reColor == Color.White ? color : Color.FromArgb(255, int.Clamp(color.R - 255 + reColor.R, 0, 255), int.Clamp(color.G - 255 + reColor.G, 0, 255), int.Clamp(color.B - 255 + reColor.B, 0, 255)));
+					}
 				}
 			}
 			return image;
@@ -94,7 +100,34 @@ namespace Atlantic_Editor
 				Bitmap? selected = SelectedImage();
 				if (selected != null)
 				{
-					selected.Save(saveFileDialog1.FileName);
+					switch (Path.GetExtension(saveFileDialog1.FileName).ToLower())
+					{
+						case ".bmp":
+							selected.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
+							return;
+						case ".png":
+							selected.Save(saveFileDialog1.FileName, ImageFormat.Png);
+							return;
+						case ".jpeg":
+							selected.Save(saveFileDialog1.FileName, ImageFormat.Jpeg);
+							return;
+						case ".ico":
+							selected.Save(saveFileDialog1.FileName, ImageFormat.Icon);
+							return;
+						case ".wmf":
+							selected.Save(saveFileDialog1.FileName, ImageFormat.Wmf);
+							return;
+						case ".gif":
+							selected.Save(saveFileDialog1.FileName, ImageFormat.Gif);
+							return;
+						case ".tiff":
+							selected.Save(saveFileDialog1.FileName, ImageFormat.Tiff);
+							return;
+						default:
+							selected.Save(saveFileDialog1.FileName);
+							return;
+					}
+
 				}
 			}
 		}
@@ -106,7 +139,7 @@ namespace Atlantic_Editor
 				if (!string.IsNullOrEmpty(nzx))
 				{
 					Entry? entry = wad.entries.Where(x => x.name == nzx).FirstOrDefault();
-					if (entry != null)
+					if (entry != default)
 					{
 						Texture? texture = entry.texture;
 						if (texture != null)
@@ -137,6 +170,21 @@ namespace Atlantic_Editor
 				}
 				progressBar1.Enabled = false;
 				progressBar1.Value = 0;
+			}
+		}
+		private void Main_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			if (wad != null)
+			{
+				wad.Close();
+			}
+		}
+		private void filterToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (colorDialog1.ShowDialog() == DialogResult.OK)
+			{
+				reColor = colorDialog1.Color;
+				listBox1_SelectedIndexChanged(sender, e);
 			}
 		}
 	}

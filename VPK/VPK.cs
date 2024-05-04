@@ -4,74 +4,92 @@ namespace TTMC.VPK
 {
 	public class VPK
 	{
+		public readonly int signature;
+		public readonly int version;
+		public readonly int treeSize;
+		public readonly int FileDataSectionSize;
+		public readonly int ArchiveMD5SectionSize;
+		public readonly int OtherMD5SectionSize;
+		public readonly int SignatureSectionSize;
 		public List<Entry> entries = new();
-		internal byte[] data = new byte[0];
-		internal byte[] tree = new byte[0];
+		private Stream stream;
 		internal string origin = string.Empty;
-		public VPK(string filePath, bool force = false)
+		public VPK(Stream stream)
 		{
-			int ant = filePath.LastIndexOf("_");
-			origin = filePath[..ant];
-			data = File.ReadAllBytes(filePath);
-			List<Entry> response = new();
-			int signature = BitConverter.ToInt32(data, 0);
-			int version = BitConverter.ToInt32(data, 4);
-			int treeSize = BitConverter.ToInt32(data, 8);
-			if (signature == 1437209140 || force)
+			this.stream = stream;
+			byte[] data = new byte[4];
+			stream.Read(data, 0, 4);
+			signature = BitConverter.ToInt32(data);
+			stream.Read(data, 0, 4);
+			version = BitConverter.ToInt32(data);
+			stream.Read(data, 0, 4);
+			treeSize = BitConverter.ToInt32(data);
+			if (version == 2)
 			{
-				int headerLength = 0;
-				switch (version)
+				stream.Read(data, 0, 4);
+				FileDataSectionSize = BitConverter.ToInt32(data);
+				stream.Read(data, 0, 4);
+				ArchiveMD5SectionSize = BitConverter.ToInt32(data);
+				stream.Read(data, 0, 4);
+				OtherMD5SectionSize = BitConverter.ToInt32(data);
+				stream.Read(data, 0, 4);
+				SignatureSectionSize = BitConverter.ToInt32(data);
+			}
+			if (signature == 0x55AA1234)
+			{
+				while (stream.Position < (treeSize + 12))
 				{
-					case 1:
-						headerLength = 12;
-						break;
-					case 2:
-						headerLength = 28;
-						break;
-					default:
-						return;
-				}
-				tree = data[headerLength..][..treeSize];
-				int pointer = 0;
-				while (true)
-				{
-					string extension = NullTerminated(tree, pointer);
-					pointer += extension.Length + 1;
+					string extension = NullTerminated();
 					if (string.IsNullOrEmpty(extension))
 					{
 						break;
 					}
 					while (true)
 					{
-						string path = NullTerminated(tree, pointer);
-						pointer += path.Length + 1;
+						string path = NullTerminated();
 						if (string.IsNullOrEmpty(path))
 						{
 							break;
 						}
 						while (true)
 						{
-							string filename = NullTerminated(tree, pointer);
-							pointer += filename.Length + 1;
+							string filename = NullTerminated();
 							if (string.IsNullOrEmpty(filename))
 							{
 								break;
 							}
-							ushort preloadBytes = BitConverter.ToUInt16(tree, pointer + 4);
-							Entry entry = new(this, pointer, extension, path, filename);
-							response.Add(entry);
-							pointer += preloadBytes + 18;
+							stream.Read(data, 0, 4);
+							int crc = BitConverter.ToInt32(data);
+							stream.Read(data, 0, 2);
+							ushort preloadBytes = BitConverter.ToUInt16(data);
+							stream.Read(data, 0, 2);
+							ushort archiveIndex = BitConverter.ToUInt16(data);
+							stream.Read(data, 0, 4);
+							int entryOffset = BitConverter.ToInt32(data);
+							stream.Read(data, 0, 4);
+							int entryLength = BitConverter.ToInt32(data);
+							byte[] preloadData = new byte[preloadBytes];
+							stream.Read(preloadData, 0, preloadBytes);
+							stream.Position += 2;
+							Entry entry = new(extension, path, filename, crc, preloadBytes, archiveIndex, entryOffset, entryLength, preloadData);
+							entries.Add(entry);
 						}
 					}
 				}
 			}
-			entries = response;
 		}
-		internal string NullTerminated(byte[] data, int start = 0, int max = 0)
+		private string NullTerminated()
 		{
-			List<byte> bytes = (max != 0 ? data[start..][..max] : data[start..]).ToList();
-			int count = bytes.Contains(0x00) ? bytes.IndexOf(0x00) : max;
-			return Encoding.ASCII.GetString(data, start, count);
+			List<byte> buffer = new();
+			while (true)
+			{
+				int b = stream.ReadByte();
+				if (b == 0x00)
+				{
+					return Encoding.UTF8.GetString(buffer.ToArray());
+				}
+				buffer.Add((byte)b);
+			}
 		}
 		public string AlterFile(int index)
 		{
@@ -96,77 +114,32 @@ namespace TTMC.VPK
 	}
 	public class Entry
 	{
-		internal VPK vpk;
-		internal int pointer;
-		public string extension;
-		public string path;
-		public string filename;
-		public Entry(VPK vpk, int pointer, string extension, string path, string filename)
+		public readonly string extension;
+		public readonly string path;
+		public readonly string filename;
+		public readonly int crc;
+		public readonly ushort preloadBytes;
+		public readonly ushort archiveIndex;
+		public readonly int entryOffset;
+		public readonly int entryLength;
+		public readonly byte[] preloadData;
+		public Entry(string extension, string path, string filename, int crc, ushort preloadBytes, ushort archiveIndex, int entryOffset, int entryLength, byte[] preloadData)
 		{
-			this.vpk = vpk;
-			this.pointer = pointer;
 			this.extension = extension;
 			this.path = path;
 			this.filename = filename;
-		}
-		public int CRC
-		{
-			get
-			{
-				return BitConverter.ToInt32(vpk.tree, pointer);
-			}
-		}
-		internal ushort preloadBytes
-		{
-			get
-			{
-				return BitConverter.ToUInt16(vpk.tree, pointer + 4);
-			}
-		}
-		internal ushort archiveIndex
-		{
-			get
-			{
-				return BitConverter.ToUInt16(vpk.tree, pointer + 6);
-			}
-		}
-		internal int entryOffset
-		{
-			get
-			{
-				return BitConverter.ToInt32(vpk.tree, pointer + 8);
-			}
-		}
-		internal int entryLength
-		{
-			get
-			{
-				return BitConverter.ToInt32(vpk.tree, pointer + 12);
-			}
-		}
-		public byte[] preloadData
-		{
-			get
-			{
-				return vpk.data[(pointer + 18)..][..preloadBytes];
-			}
+			this.crc = crc;
+			this.preloadBytes = preloadBytes;
+			this.archiveIndex = archiveIndex;
+			this.entryOffset = entryOffset;
+			this.entryLength = entryLength;
+			this.preloadData = preloadData;
 		}
 		public string fullPath
 		{
 			get
 			{
 				return  path == " " ? filename + "." + extension : path + "/" + filename + "." + extension;
-			}
-		}
-		public byte[] data
-		{
-			get
-			{
-				if (entryLength > 0)
-				{
-					return vpk.Combine(preloadData, File.ReadAllBytes(vpk.AlterFile(archiveIndex))[entryOffset..][..entryLength]);
-				}
-				return preloadData;
 			}
 		}
 	}

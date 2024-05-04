@@ -1,6 +1,6 @@
 ﻿namespace Atlantic_Editor
 {
-	partial class Main
+	partial class TextureBrowser
 	{
 		/// <summary>
 		///  Required designer variable.
@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextureBrowser));
 			list = new ListBox();
 			picture = new PictureBox();
 			search = new TextBox();
@@ -38,9 +38,12 @@
 			saveToolStripMenuItem = new ToolStripMenuItem();
 			imagesToolStripMenuItem = new ToolStripMenuItem();
 			selectedToolStripMenuItem = new ToolStripMenuItem();
+			toolsToolStripMenuItem = new ToolStripMenuItem();
+			colorToolStripMenuItem = new ToolStripMenuItem();
 			openFileDialog1 = new OpenFileDialog();
 			folderBrowserDialog1 = new FolderBrowserDialog();
 			saveFileDialog1 = new SaveFileDialog();
+			colorDialog1 = new ColorDialog();
 			((System.ComponentModel.ISupportInitialize)picture).BeginInit();
 			menuStrip1.SuspendLayout();
 			SuspendLayout();
@@ -53,7 +56,7 @@
 			list.ItemHeight = 33;
 			list.Location = new Point(12, 73);
 			list.Name = "list";
-			list.Size = new Size(200, 466);
+			list.Size = new Size(400, 466);
 			list.TabIndex = 0;
 			list.SelectedIndexChanged += listBox1_SelectedIndexChanged;
 			// 
@@ -61,7 +64,7 @@
 			// 
 			picture.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			picture.BorderStyle = BorderStyle.FixedSingle;
-			picture.Location = new Point(217, 27);
+			picture.Location = new Point(418, 27);
 			picture.Name = "picture";
 			picture.Size = new Size(512, 512);
 			picture.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -74,7 +77,7 @@
 			search.Font = new Font("Roboto", 20.25F, FontStyle.Regular, GraphicsUnit.Point);
 			search.Location = new Point(12, 27);
 			search.Name = "search";
-			search.Size = new Size(200, 40);
+			search.Size = new Size(400, 40);
 			search.TabIndex = 2;
 			search.TextChanged += search_TextChanged;
 			// 
@@ -82,17 +85,17 @@
 			// 
 			progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			progressBar1.Enabled = false;
-			progressBar1.Location = new Point(11, 545);
+			progressBar1.Location = new Point(12, 545);
 			progressBar1.Name = "progressBar1";
-			progressBar1.Size = new Size(718, 23);
+			progressBar1.Size = new Size(918, 23);
 			progressBar1.TabIndex = 3;
 			// 
 			// menuStrip1
 			// 
-			menuStrip1.Items.AddRange(new ToolStripItem[] { openToolStripMenuItem, saveToolStripMenuItem });
+			menuStrip1.Items.AddRange(new ToolStripItem[] { openToolStripMenuItem, saveToolStripMenuItem, toolsToolStripMenuItem });
 			menuStrip1.Location = new Point(0, 0);
 			menuStrip1.Name = "menuStrip1";
-			menuStrip1.Size = new Size(741, 24);
+			menuStrip1.Size = new Size(942, 24);
 			menuStrip1.TabIndex = 4;
 			menuStrip1.Text = "menuStrip1";
 			// 
@@ -124,6 +127,20 @@
 			selectedToolStripMenuItem.Text = "Selected";
 			selectedToolStripMenuItem.Click += selectedToolStripMenuItem_Click;
 			// 
+			// toolsToolStripMenuItem
+			// 
+			toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { colorToolStripMenuItem });
+			toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+			toolsToolStripMenuItem.Size = new Size(47, 20);
+			toolsToolStripMenuItem.Text = "Tools";
+			// 
+			// colorToolStripMenuItem
+			// 
+			colorToolStripMenuItem.Name = "colorToolStripMenuItem";
+			colorToolStripMenuItem.Size = new Size(180, 22);
+			colorToolStripMenuItem.Text = "Filter";
+			colorToolStripMenuItem.Click += filterToolStripMenuItem_Click;
+			// 
 			// openFileDialog1
 			// 
 			openFileDialog1.FileName = "openFileDialog1";
@@ -131,13 +148,13 @@
 			// 
 			// saveFileDialog1
 			// 
-			saveFileDialog1.Filter = "Bitmap|*.bmp|All files|*.*";
+			saveFileDialog1.Filter = "Bitmap Image|*.bmp|Portable Network Graphic|*.png|JPEG Image|*.jpeg|Icon File|*.ico|Windows Metafile|*.wmf|Graphical Interchange Format File|*.gif|Tagged Image File Format|*.tiff|All files|*.*";
 			// 
 			// Main
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(741, 576);
+			ClientSize = new Size(942, 576);
 			Controls.Add(progressBar1);
 			Controls.Add(search);
 			Controls.Add(picture);
@@ -147,6 +164,7 @@
 			MainMenuStrip = menuStrip1;
 			Name = "Main";
 			Text = "Atlantic Editor";
+			FormClosing += Main_FormClosing;
 			((System.ComponentModel.ISupportInitialize)picture).EndInit();
 			menuStrip1.ResumeLayout(false);
 			menuStrip1.PerformLayout();
@@ -168,5 +186,8 @@
 		private FolderBrowserDialog folderBrowserDialog1;
 		private ToolStripMenuItem selectedToolStripMenuItem;
 		private SaveFileDialog saveFileDialog1;
+		private ToolStripMenuItem toolsToolStripMenuItem;
+		private ToolStripMenuItem colorToolStripMenuItem;
+		private ColorDialog colorDialog1;
 	}
 }

@@ -5,12 +5,16 @@ namespace Atlantic_Editor
 	public partial class FileBrowser : Form
 	{
 		VPK? vpk = null;
+		Stream? stream = null;
+		string? fileName = null;
 		public FileBrowser(string? fileName = null)
 		{
+			this.fileName = fileName;
 			InitializeComponent();
 			if (!string.IsNullOrEmpty(fileName))
 			{
-				vpk = new(fileName);
+				stream = File.OpenRead(fileName);
+				vpk = new(stream);
 				UpdateTree();
 			}
 		}
@@ -19,25 +23,31 @@ namespace Atlantic_Editor
 			tree.BeginUpdate();
 			if (vpk != null)
 			{
-				foreach (Entry entry in vpk.entries)
-				{
-					TreeNodeCollection selected = tree.Nodes;
-					string[] basic = entry.fullPath.Split('/');
-					foreach (string value in basic)
-					{
-						if (!selected.ContainsKey(value))
-						{
-							TreeNode treeNode = selected.Add(value, value);
-							selected = treeNode.Nodes;
-						}
-						else
-						{
-							selected = selected[selected.IndexOfKey(value)].Nodes;
-						}
-					}
-				}
+				tree.Nodes.AddRange(Eclipse(vpk.entries));
 			}
 			tree.EndUpdate();
+		}
+		private TreeNode[] Eclipse(IEnumerable<Entry> entries, int depth = 0)
+		{
+			List<TreeNode> nodes = new();
+			List<string> keys = new();
+			foreach (Entry entry in entries)
+			{
+				string[] tmp = entry.path.Split('/');
+				if (tmp.Count() > depth)
+				{
+					keys.Add(tmp[depth]);
+				}
+				else
+				{
+					nodes.Add(new(entry.filename + "." + entry.extension));
+				}
+			}
+			foreach (string value in keys.Distinct())
+			{
+				nodes.Add(new(value, Eclipse(entries.Where(x => x.path.Split('/').Count() > depth && x.path.Split('/')[depth] == value), depth + 1)));
+			}
+			return nodes.ToArray();
 		}
 		private string[] DoWork(TreeNodeCollection treeNodeCollection)
 		{
@@ -71,7 +81,7 @@ namespace Atlantic_Editor
 						foreach (Entry entry in vpk.entries.Where(x => x.fullPath.StartsWith(path.Replace('\\', '/'))))
 						{
 							Directory.CreateDirectory(dialog.SelectedPath + "\\" + (entry.path ?? string.Empty)[path.Length..]);
-							File.WriteAllBytes(dialog.SelectedPath + "\\" + entry.fullPath.Replace('/', '\\')[path.Length..], entry.data);
+							File.WriteAllBytes(dialog.SelectedPath + "\\" + entry.fullPath.Replace('/', '\\')[path.Length..], GetData(entry));
 						}
 					}
 				}
@@ -87,7 +97,7 @@ namespace Atlantic_Editor
 						Entry? entry = vpk.entries.Where(x => x.fullPath == temp.Replace('\\', '/')).FirstOrDefault();
 						if (entry != null)
 						{
-							File.WriteAllBytes(dialog.FileName, entry.data);
+							File.WriteAllBytes(dialog.FileName, GetData(entry));
 						}
 					}
 				}
@@ -106,7 +116,7 @@ namespace Atlantic_Editor
 					foreach (Entry entry in vpk.entries)
 					{
 						Directory.CreateDirectory(dialog.SelectedPath + "\\" + entry.path);
-						File.WriteAllBytes(dialog.SelectedPath + "\\" + entry.fullPath.Replace('/', '\\'), entry.data);
+						File.WriteAllBytes(dialog.SelectedPath + "\\" + entry.fullPath.Replace('/', '\\'), GetData(entry));
 					}
 				}
 			}
@@ -123,16 +133,51 @@ namespace Atlantic_Editor
 				{
 					if (Path.GetExtension(dialog.FileName).ToLower() == ".wad")
 					{
-						Main main = new(dialog.FileName);
-						main.Show();
+						TextureBrowser textureBrowser = new(dialog.FileName);
+						textureBrowser.Show();
 					}
 					else
 					{
-						vpk = new(dialog.FileName);
+						vpk = new(File.OpenRead(dialog.FileName));
 						UpdateTree();
 					}
 				}
 			}
+		}
+		private byte[] GetData(Entry entry)
+		{
+			if (vpk != null && stream != null && !string.IsNullOrEmpty(fileName))
+			{
+				byte[] bytes = new byte[entry.entryLength];
+				if (entry.archiveIndex == 0x7fff)
+				{
+					stream.Read(bytes, entry.entryOffset + vpk.treeSize + (vpk.version == 1 ? 12 : 28), entry.entryLength);
+					return bytes;
+				}
+				else
+				{
+					FileStream fileStream = File.OpenRead(fileName[..^7] + Better(entry.archiveIndex) + ".vpk");
+					fileStream.Position = entry.entryOffset;
+					fileStream.Read(bytes, 0, entry.entryLength);
+					fileStream.Close();
+					fileStream.Dispose();
+					return bytes;
+				}
+			}
+			return [];
+		}
+		private string Better(int num)
+		{
+			string start = num.ToString();
+			while (start.Length < 3)
+			{
+				start = "0" + start;
+			}
+			return start;
+		}
+		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("Atlantic Editor v0.2\nMade by TheBlueLiens", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 	}
 }
