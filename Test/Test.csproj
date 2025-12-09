@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BPList\BPList.csproj" />
+    <ProjectReference Include="..\MPQ\MPQ.csproj" />
+    <ProjectReference Include="..\VPK\VPK.csproj" />
+    <ProjectReference Include="..\VTF\VTF.csproj" />
+    <ProjectReference Include="..\WAD\WAD.csproj" />
+    <ProjectReference Include="..\WPK\WPK.csproj" />
+  </ItemGroup>
+
+</Project>

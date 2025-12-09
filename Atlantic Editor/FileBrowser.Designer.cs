@@ -43,7 +43,7 @@
 			// tree
 			// 
 			tree.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			tree.Font = new Font("Roboto", 20.25F);
+			tree.Font = new Font("Microsoft Sans Serif", 20.25F);
 			tree.Location = new Point(12, 27);
 			tree.Name = "tree";
 			tree.Size = new Size(776, 411);
@@ -68,7 +68,7 @@
 			// openToolStripMenuItem
 			// 
 			openToolStripMenuItem.Name = "openToolStripMenuItem";
-			openToolStripMenuItem.Size = new Size(103, 22);
+			openToolStripMenuItem.Size = new Size(180, 22);
 			openToolStripMenuItem.Text = "Open";
 			openToolStripMenuItem.Click += openToolStripMenuItem_Click;
 			// 
@@ -82,14 +82,14 @@
 			// selectedToolStripMenuItem
 			// 
 			selectedToolStripMenuItem.Name = "selectedToolStripMenuItem";
-			selectedToolStripMenuItem.Size = new Size(118, 22);
+			selectedToolStripMenuItem.Size = new Size(180, 22);
 			selectedToolStripMenuItem.Text = "Selected";
 			selectedToolStripMenuItem.Click += selectedToolStripMenuItem_Click;
 			// 
 			// allToolStripMenuItem
 			// 
 			allToolStripMenuItem.Name = "allToolStripMenuItem";
-			allToolStripMenuItem.Size = new Size(118, 22);
+			allToolStripMenuItem.Size = new Size(180, 22);
 			allToolStripMenuItem.Text = "All";
 			allToolStripMenuItem.Click += allToolStripMenuItem_Click;
 			// 

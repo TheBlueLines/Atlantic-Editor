@@ -1,9 +1,11 @@
-﻿using TTMC.VPK;
+﻿using TTMC.ORE;
+using TTMC.VPK;
 
 namespace Atlantic_Editor
 {
 	public partial class FileBrowser : Form
 	{
+		ORE? ore = null;
 		VPK? vpk = null;
 		Stream? stream = null;
 		string? fileName = null;
@@ -13,8 +15,16 @@ namespace Atlantic_Editor
 			InitializeComponent();
 			if (!string.IsNullOrEmpty(fileName))
 			{
+				Text += $" ({Path.GetFileName(fileName)})";
 				stream = File.OpenRead(fileName);
-				vpk = new(stream);
+				if (fileName.EndsWith(".vpk"))
+				{
+					vpk = new(stream);
+				}
+				else if (fileName.EndsWith(".ore"))
+				{
+					ore = new(stream);
+				}
 				UpdateTree();
 			}
 		}
@@ -25,7 +35,33 @@ namespace Atlantic_Editor
 			{
 				tree.Nodes.AddRange(Eclipse(vpk.entries));
 			}
+			else if (ore != null)
+			{
+				tree.Nodes.AddRange(OreLoader(ore));
+			}
 			tree.EndUpdate();
+		}
+		private TreeNode[] OreLoader(ORE ore)
+		{
+			TreeNode[] dirNodes = new TreeNode[ore.dirs.Length + ore.contents.Length];
+			for (int i = 0; i < ore.dirs.Length; i++)
+			{
+				Dir dir = ore.dirs[i];
+				dirNodes[i] = new(dir.name);
+				TreeNode[] contentNodes = new TreeNode[dir.contents.Length];
+				for (int j = 0; j < dir.contents.Length; j++)
+				{
+					Content content = dir.contents[j];
+					contentNodes[j] = new(content.name);
+				}
+				dirNodes[i].Nodes.AddRange(contentNodes);
+			}
+			for (int i = 0; i < ore.contents.Length; i++)
+			{
+				Content content = ore.contents[i];
+				dirNodes[ore.dirs.Length + i] = new(content.name);
+			}
+			return dirNodes.ToArray();
 		}
 		private TreeNode[] Eclipse(IEnumerable<Entry> entries, int depth = 0)
 		{
@@ -67,37 +103,84 @@ namespace Atlantic_Editor
 		}
 		private void selectedToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (vpk != null)
+			if (tree.SelectedNode != null)
 			{
-				if (tree.SelectedNode.Nodes.Count > 0)
+				TreeNode selectedNode = tree.SelectedNode;
+				if (vpk != null)
 				{
-					FolderBrowserDialog dialog = new()
+					if (selectedNode.Nodes.Count > 0)
 					{
-						ShowNewFolderButton = true
-					};
-					if (dialog.ShowDialog() == DialogResult.OK)
-					{
-						string path = tree.SelectedNode.FullPath;
-						foreach (Entry entry in vpk.entries.Where(x => x.fullPath.StartsWith(path.Replace('\\', '/'))))
+						FolderBrowserDialog dialog = new()
 						{
-							Directory.CreateDirectory(dialog.SelectedPath + "\\" + (entry.path ?? string.Empty)[path.Length..]);
-							File.WriteAllBytes(dialog.SelectedPath + "\\" + entry.fullPath.Replace('/', '\\')[path.Length..], GetData(entry));
+							ShowNewFolderButton = true
+						};
+						if (dialog.ShowDialog() == DialogResult.OK)
+						{
+							string path = selectedNode.FullPath;
+							foreach (Entry entry in vpk.entries.Where(x => x.fullPath.StartsWith(path.Replace('\\', '/'))))
+							{
+								Directory.CreateDirectory(dialog.SelectedPath + "\\" + (entry.path ?? string.Empty)[path.Length..]);
+								File.WriteAllBytes(dialog.SelectedPath + "\\" + entry.fullPath.Replace('/', '\\')[path.Length..], GetData(entry));
+							}
+						}
+					}
+					else
+					{
+						SaveFileDialog dialog = new()
+						{
+							FileName = Path.GetFileName(selectedNode.FullPath)
+						};
+						if (dialog.ShowDialog() == DialogResult.OK)
+						{
+							string temp = selectedNode.FullPath;
+							Entry? entry = vpk.entries.Where(x => x.fullPath == temp.Replace('\\', '/')).FirstOrDefault();
+							if (entry != null)
+							{
+								File.WriteAllBytes(dialog.FileName, GetData(entry));
+							}
 						}
 					}
 				}
-				else
+				else if (ore != null)
 				{
-					SaveFileDialog dialog = new()
+					if (selectedNode.Nodes.Count > 0)
 					{
-						FileName = Path.GetFileName(tree.SelectedNode.FullPath)
-					};
-					if (dialog.ShowDialog() == DialogResult.OK)
-					{
-						string temp = tree.SelectedNode.FullPath;
-						Entry? entry = vpk.entries.Where(x => x.fullPath == temp.Replace('\\', '/')).FirstOrDefault();
-						if (entry != null)
+						Dir dir = ore.dirs.Where(x => x.name == selectedNode.Text).First();
+						FolderBrowserDialog dialog = new()
 						{
-							File.WriteAllBytes(dialog.FileName, GetData(entry));
+							ShowNewFolderButton = true
+						};
+						if (dialog.ShowDialog() == DialogResult.OK)
+						{
+							foreach (Content content in dir.contents)
+							{
+								File.WriteAllBytes(Path.Combine(dialog.SelectedPath, content.name), content.data);
+							}
+						}
+					}
+					else if (selectedNode.Parent != null)
+					{
+						Dir dir = ore.dirs.Where(x => x.name == selectedNode.Parent.Text).First();
+						SaveFileDialog dialog = new()
+						{
+							FileName = Path.GetFileName(selectedNode.FullPath)
+						};
+						if (dialog.ShowDialog() == DialogResult.OK)
+						{
+							Content content = dir.contents.Where(x => x.name == selectedNode.Text).First();
+							File.WriteAllBytes(dialog.FileName, content.data);
+						}
+					}
+					else
+					{
+						Content content = ore.contents.Where(x => x.name == selectedNode.Text).First();
+						SaveFileDialog dialog = new()
+						{
+							FileName = Path.GetFileName(selectedNode.FullPath)
+						};
+						if (dialog.ShowDialog() == DialogResult.OK)
+						{
+							File.WriteAllBytes(dialog.FileName, content.data);
 						}
 					}
 				}
@@ -120,6 +203,28 @@ namespace Atlantic_Editor
 					}
 				}
 			}
+			else if (ore != null)
+			{
+				FolderBrowserDialog dialog = new()
+				{
+					ShowNewFolderButton = true
+				};
+				if (dialog.ShowDialog() == DialogResult.OK)
+				{
+					foreach (Dir dir in ore.dirs)
+					{
+						Directory.CreateDirectory(Path.Combine(dialog.SelectedPath, dir.name));
+						foreach (Content content in dir.contents)
+						{
+							File.WriteAllBytes(Path.Combine(dialog.SelectedPath, dir.name, content.name), content.data);
+						}
+					}
+					foreach (Content content in ore.contents)
+					{
+						File.WriteAllBytes(Path.Combine(dialog.SelectedPath, content.name), content.data);
+					}
+				}
+			}
 		}
 		private void openToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -138,7 +243,14 @@ namespace Atlantic_Editor
 					}
 					else
 					{
-						vpk = new(File.OpenRead(dialog.FileName));
+						if (dialog.FileName.EndsWith(".vpk"))
+						{
+							vpk = new(File.OpenRead(dialog.FileName));
+						}
+						else if (dialog.FileName.EndsWith(".ore"))
+						{
+							ore = new(File.OpenRead(dialog.FileName));
+						}
 						UpdateTree();
 					}
 				}

@@ -2,12 +2,24 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
     <RootNamespace>Atlantic_Editor</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>tiles.ico</ApplicationIcon>
+    <Title>Atlantic Editor</Title>
+    <Version>0.3</Version>
+    <Authors>TheBlueLines</Authors>
+    <Company>TTMC Corporation</Company>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/TheBlueLines/Atlantic-Editor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyTitle>Atlantic Editor</AssemblyTitle>
+    <AssemblyName>aedit</AssemblyName>
+    <NoWin32Manifest>true</NoWin32Manifest>
+    <Product>Atlantic Editor</Product>
+    <Description>Edit rare file types</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +27,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BPList\BPList.csproj" />
+    <ProjectReference Include="..\ORE\ORE.csproj" />
     <ProjectReference Include="..\VPK\VPK.csproj" />
+    <ProjectReference Include="..\VTF\VTF.csproj" />
     <ProjectReference Include="..\WAD\WAD.csproj" />
   </ItemGroup>
 
